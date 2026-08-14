@@ -1,47 +1,53 @@
-// PORT FIX - EN ÜSTE KOYDUM, SİLME
-const http = require('http');
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Slawes Bot Aktif!');
-}).listen(process.env.PORT || 3000, '0.0.0.0', () => {
-  console.log('Port açıldı');
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('discord.js');
+const express = require('express');
+
+// Port hatası için - Render için şart
+const app = express();
+app.get('/', (req, res) => res.send('Bot aktif!'));
+app.listen(process.env.PORT || 10000);
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+client.once('ready', async () => {
+  console.log(`Giriş yapıldı: ${client.user.tag}`);
+
+  // Slash komutu kaydet
+  const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+  try {
+    await rest.put(
+      Routes.applicationCommands(process.env.CLIENT_ID),
+      { body: [{ name: 'yaz', description: 'Spoofer duyurusunu atar' }] }
+    );
+    console.log('Komutlar yüklendi');
+  } catch (e) { console.error(e); }
 });
 
-require('dotenv').config();
-const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+  if (interaction.commandName === 'yaz') {
 
-const TOKEN = process.env.TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
+    const embed = new EmbedBuilder()
+     .setAuthor({ name: 'GG Klanı | UYG' })
+     .setTitle('ManLikeAlex91 Permanent HWID Spoofer v1.0')
+     .setDescription(
+`Merhabalar, sizlere kendi geliştirdiğim HWID Spoofer'ı sunuyorum. Kernel tabanlı, **permanent (kalıcı)** çalışan ve birden fazla anti-cheat'e karşı test edilmiş bir araçtır.
 
-const commands = [
-    new SlashCommandBuilder().setName('ping').setDescription('Bot aktif mi').toJSON(),
-    new SlashCommandBuilder()
-        .setName('yaz')
-        .setDescription('Bot metin atsın')
-        .addStringOption(o => o.setName('metin').setDescription('Buraya metin yaz').setRequired(true))
-        .addChannelOption(o => o.setName('kanal').setDescription('Kanal seç').setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .toJSON()
-];
+🌟 **Özellikler**
+> • **Permanent (Kalıcı) Kernel Spoof**
+> • Her restartta otomatik spoof atar
+> • Driverları Otomatik Durdur — PC açıldığında driverları otomatik durdurur, VAN hatasını engeller
+> • Tek tıkla çalışır, teknik bilgi gerekmez
+> • Tamamen ücretsiz`
+      )
+     .addFields(
+        { name: '🎮 Desteklenen Oyunlar', value: '• Valorant (Vanguard)\n• FiveM\n• EAC (Easy Anti-Cheat)\n• BattlEye', inline: true },
+        { name: '🔧 Neler Spooflanır?', value: '• CPU Seri Numarası\n• Motherboard Seri Numarası\n• BIOS UUID\n• HDD / SSD Disk Seri Numarası\n• Volume ID • MAC Adresi', inline: true }
+      )
+     .setColor(0x8A2BE2)
+     .setTimestamp();
 
-const rest = new REST({ version: '10' }).setToken(TOKEN);
-(async () => {
-    try {
-        await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-        console.log('Komutlar yüklendi');
-    } catch(e){ console.error(e); }
-})();
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
-client.once('ready', () => console.log(`Giriş yapıldı: ${client.user.tag}`));
-client.on('interactionCreate', async i => {
-    if(!i.isChatInputCommand()) return;
-    if(i.commandName === 'ping') return i.reply(`Pong! ${client.ws.ping}ms`);
-    if(i.commandName === 'yaz'){
-        const metin = i.options.getString('metin');
-        const kanal = i.options.getChannel('kanal') || i.channel;
-        await kanal.send(metin);
-        await i.reply({content: `✅ Gönderildi`, ephemeral: true});
-    }
+    await interaction.reply({ embeds: [embed] });
+  }
 });
-client.login(TOKEN);
+
+client.login(process.env.TOKEN);
