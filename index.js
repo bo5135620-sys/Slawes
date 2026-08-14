@@ -23,13 +23,13 @@ client.on('interactionCreate', async interaction => {
      .setAuthor({ name: 'Slawes Cheats | UYG' })
      .setTitle('Slawes Cheats Emulator v1.0')
      .setDescription(
-`Merhabalar, sizlere Slawes Klanın geliştirdiği Emulator sunuyorum. Emulator val 5 vermez veya van 156 verirse ticket açın olmaz eğer olursa ticket açıp fixlenmesini bekleyin iyi günler.
+`Merhabalar, sizlere Slawes Klanın geliştirdiği Emulator sunuyorum. Emulator val 5 vermez veya van 156 verirse ticket açın olmaz eğer olursa ticket açıp fixlenmesini bekleyin kesinlikle kalıcıdır iyi günler.
 
-☀️ **Özellikler**
-> • No Restart
-> • Emulator VAN hatasını engeller
-> • Tek tıkla çalışır, teknik bilgi gerekmez
-> • Tamamen ücretsiz`
+☀️ **Özellikler**                                                    🎮 Desteklenen Oyunlar
+> • No Restart                                                           •Valorant (vanguard)
+> • Emulator VAN hatasını engeller                                       •vgk (durdurur)
+> • Tek tıkla çalışır, teknik bilgi gerekmez                             •vgc (durdurur)
+> • Eğer Val 102 Yerseniz Ard Arda Biraz Bekleyin Tekrar Deneyin`
       )
      .setColor(0x8A2BE2)
      .setTimestamp();
