@@ -1,5 +1,9 @@
 const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('discord.js');
 const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
+const http = require('http');
+
+// Render port hatasını çözmek için sahte web server
+http.createServer((req,res) => res.end('SlawesCheats Online')).listen(process.env.PORT || 3000);
 
 const client = new Client({
   intents: [
@@ -10,13 +14,13 @@ const client = new Client({
 });
 
 client.once('ready', async () => {
-  console.log(`Giriş yapıldı: ${client.user.tag}`);
+  console.log(`Online: ${client.user.tag}`);
 
   const commands = [
     { name: 'sese', description: 'Botu bulunduğun sese çeker' },
     { name: 'sesten-cik', description: 'Botu sesten çıkarır' },
-    { name: 'yaz', description: 'Özel embed duyuru atar' },
-    { name: 'spoof', description: 'Fotoğraflı duyuru atar' }
+    { name: 'yaz', description: 'Özel embed duyuru' },
+    { name: 'spoof', description: 'Fotoğraflı duyuru' }
   ];
 
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
@@ -27,10 +31,9 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
-  // SESE GİR
   if (interaction.commandName === 'sese') {
     const vc = interaction.member?.voice?.channel;
-    if (!vc) return interaction.reply({ content: '❌ Kanka önce bir ses kanalına gir!', ephemeral: true });
+    if (!vc) return interaction.reply({ content: '❌ Önce sese gir kanka!', ephemeral: true });
 
     joinVoiceChannel({
       channelId: vc.id,
@@ -38,35 +41,22 @@ client.on('interactionCreate', async interaction => {
       adapterCreator: interaction.guild.voiceAdapterCreator,
       selfDeaf: false
     });
-
-    return interaction.reply({ content: `✅ **${vc.name}** kanalına girdim, artık çıkmam.` });
+    return interaction.reply(`✅ **${vc.name}** girdim.`);
   }
 
-  // SESTEN ÇIK
   if (interaction.commandName === 'sesten-cik') {
     const conn = getVoiceConnection(interaction.guild.id);
     if (conn) conn.destroy();
-    return interaction.reply({ content: '👋 Sesten çıktım.' });
+    return interaction.reply('👋 Çıktım.');
   }
 
-  // YAZ
   if (interaction.commandName === 'yaz') {
-    const embed2 = new EmbedBuilder()
-     .setTitle('Slawes Store')
-     .setDescription('Buraya kendi yazını yazarsın kanka')
-     .setColor(0x8A2BE2);
-
-    return interaction.reply({ embeds:  }); // İŞTE BURASI ÖNEMLİ - BOŞ BIRAKMA
+    const embed2 = new EmbedBuilder().setTitle('Slawes Store').setDescription('Burayı düzenle').setColor(0x8A2BE2);
+    return interaction.reply({ embeds:  });
   }
 
-  // SPOOF
   if (interaction.commandName === 'spoof') {
-    const embed = new EmbedBuilder()
-     .setTitle('Spoofer')
-     .setDescription('Açıklama buraya')
-     .setImage('https://i.imgur.com/placeholder.png')
-     .setColor(0x8A2BE2);
-
+    const embed = new EmbedBuilder().setTitle('Spoofer').setDescription('Burayı düzenle').setImage('https://i.imgur.com/placeholder.png').setColor(0x8A2BE2);
     return interaction.reply({ embeds: [embed] });
   }
 });
