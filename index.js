@@ -70,7 +70,7 @@ Not:Bu Ürünün Doğru Çalışması İçin Windows Reİnstall Ve Bios Flash ge
 eğer bunlar ne bilmiyorsanız satın alım sonrası destek ekibimiz size tüm adımlarda yardımcı olacaktır Asus ve Laptoplarda Raid şart değildir msi asrock gigbyte raid şartır`)
 .setColor(0xFF0000)
 .setImage('https://cdn.discordapp.com/attachments/1536696056769814642/1537828399140053152/08cf01ea-1927-443a-8ce0-2e84770d57ba.jpg?ex=6a8075cd&is=6a7f244d&hm=103a57edf171a93feff03ec7e539b657be281909536f7310c9f063d491bf071d&');
-    await interaction.reply({ embeds:  });
+    await interaction.reply({ embeds: [embed2] });
   }
 
 });
