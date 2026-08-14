@@ -23,6 +23,7 @@ client.once('ready', async () => {
     { name: 'sesten-cik', description: 'Botu sesten çıkarır' },
     { name: 'temizle', description: 'Seçilen kanaldaki tüm mesajları siler', options: [{ name: 'kanal', description: 'Temizlenecek kanal', type: 7, required: true }] },
     { name: 'ticket-kur', description: 'Ticket sistemini kurar' },
+    { name: 'lisans', description: 'Lisans keyleri gösterir' },
     { name: 'yaz', description: 'Embed duyuru' },
     { name: 'spoof', description: 'Fotoğraflı duyuru' }
   ];
@@ -30,12 +31,12 @@ client.once('ready', async () => {
   try {
     if (process.env.GUILD_ID && process.env.CLIENT_ID) {
       await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands });
-      console.log('Guild komutlar yüklendi - ANINDA');
+      console.log('Guild komutlar ANINDA yüklendi');
     } else {
       await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
-      console.log('Global komutlar yüklendi - 1 saate gelir, GUILD_ID ekle anında olsun');
+      console.log('Global komutlar yüklendi');
     }
-  } catch(e) { console.log('Komut yükleme hatası:', e.message) }
+  } catch(e) { console.log('Hata:', e.message) }
 });
 
 client.on('interactionCreate', async interaction => {
@@ -43,7 +44,6 @@ client.on('interactionCreate', async interaction => {
     if (interaction.customId === 'create_ticket') {
       const existing = interaction.guild.channels.cache.find(c => c.name === `ticket-${interaction.user.id}`);
       if (existing) return interaction.reply({ content: `Zaten ticketin var: ${existing}`, ephemeral: true });
-
       const ticketChannel = await interaction.guild.channels.create({
         name: `ticket-${interaction.user.id}`,
         type: ChannelType.GuildText,
@@ -53,11 +53,7 @@ client.on('interactionCreate', async interaction => {
           { id: client.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
         ]
       });
-
-      const closeRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('close_ticket').setLabel('Ticketi Kapat').setEmoji('🔒').setStyle(ButtonStyle.Danger)
-      );
-
+      const closeRow = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('close_ticket').setLabel('Ticketi Kapat').setEmoji('🔒').setStyle(ButtonStyle.Danger));
       await ticketChannel.send({ content: `Hoşgeldin ${interaction.user}, yetkililer ilgilenecek!`, components: [closeRow] });
       return interaction.reply({ content: `Ticketin açıldı: ${ticketChannel}`, ephemeral: true });
     }
@@ -77,13 +73,11 @@ client.on('interactionCreate', async interaction => {
     joinVoiceChannel({ channelId: vc.id, guildId: interaction.guild.id, adapterCreator: interaction.guild.voiceAdapterCreator, selfDeaf: false, selfMute: false });
     return interaction.editReply(`✅ **${vc.name}** girdim`);
   }
-
   if (interaction.commandName === 'sesten-cik') {
     const conn = getVoiceConnection(interaction.guild.id);
     if (conn) conn.destroy();
     return interaction.reply('👋 Çıktım');
   }
-
   if (interaction.commandName === 'temizle') {
     if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) return interaction.reply({ content: '❌ Yetkin yok!', ephemeral: true });
     await interaction.deferReply();
@@ -93,29 +87,45 @@ client.on('interactionCreate', async interaction => {
     await newChannel.send(`✅ Kanal ${interaction.user} tarafından temizlendi.`);
     return interaction.editReply(`✅ Temizlendi`);
   }
-
   if (interaction.commandName === 'ticket-kur') {
     if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: '❌ Sadece admin', ephemeral: true });
     const embed = new EmbedBuilder().setTitle('Help & Support').setDescription('Click below to create a new support ticket 🎫\nPowered by Slawes').setColor(0xFFAA00);
     const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('create_ticket').setLabel('Create Ticket').setEmoji('🎫').setStyle(ButtonStyle.Secondary));
     return interaction.reply({ embeds: [embed], components: [row] });
   }
-
-  if (interaction.commandName === 'yaz') {
-    const embed = new EmbedBuilder().setTitle('Slawes Store').setDescription('Duyuru').setColor(0x8A2BE2);
+  if (interaction.commandName === 'lisans') {
+    const embed = new EmbedBuilder()
+     .setTitle('🔑 Slawes Lisans Keyleri')
+     .setDescription('**LİSANS KEY : SENT-IALI-ST26**\n**LİSANS KEY : A1B2-C3D4-E5F6**')
+     .setColor(0x00FF00)
+     .setFooter({ text: 'SlawesCheats' });
     return interaction.reply({ embeds: [embed] });
   }
-
+  if (interaction.commandName === 'yaz') {
+    return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slawes Store').setDescription('Duyuru').setColor(0x8A2BE2)] });
+  }
   if (interaction.commandName === 'spoof') {
-    const embed = new EmbedBuilder().setTitle('Spoofer').setDescription('Açıklama').setColor(0x8A2BE2);
-    return interaction.reply({ embeds: [embed] });
+    return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Spoofer').setDescription('Açıklama').setColor(0x8A2BE2)] });
   }
 });
 
+// SA-AS + ANTI-REKLAM
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
+
+  // 1- SA AS
   if (['sa','sea','s.a','selam'].includes(message.content.toLowerCase().trim())) {
     message.reply('as kanki hoşgeldin 🖤');
+  }
+
+  // 2- ANTI REKLAM
+  const reklam = ["discord.gg", "discord.com/invite", ".gg/", "https://", "http://", "www."];
+  if (reklam.some(word => message.content.toLowerCase().includes(word))) {
+    if (message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return; // Admin atarsa silme
+    try {
+      await message.delete();
+      message.channel.send(`⚠️ ${message.author} reklam yasak!`).then(m => setTimeout(() => m.delete().catch(()=>{}), 5000));
+    } catch(e) {}
   }
 });
 
