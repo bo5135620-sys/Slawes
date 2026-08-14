@@ -69,7 +69,7 @@ DONANIM BANI ATAN TÜM OYUNLARDAN TEK TUŞ İLE KURTULMA İMKANI !!
 Not:Bu Ürünün Doğru Çalışması İçin Windows Reİnstall Ve Bios Flash gereklidir VE RAİD ATMANIZ ŞART !
 eğer bunlar ne bilmiyorsanız satın alım sonrası destek ekibimiz size tüm adımlarda yardımcı olacaktır Asus ve Laptoplarda Raid şart değildir msi asrock gigbyte raid şartır`)
 .setColor(0xFF0000)
-.setImage('https://cdn.discordapp.com/attachments/1536696056769814642/1537828399140053152/08cf01ea-1927-443a-8ce0-2e84770d57ba.jpg?ex=6a8075cd&is=6a7f244d&hm=103a57edf171a93feff03ec7e539b657be281909536f7310c9f063d491bf071d&');
+.setImage('https://cdn.discordapp.com/attachments/1536696056769814642/1537834634782711848/08cf01ea-1927-443a-8ce0-2e84770d57ba.jpg?ex=6a807b9c&is=6a7f2a1c&hm=871fe5dd8b54fb240c43f461aaaba463fff01d462688598ea3fb8202f3a2d3e6&');
     await interaction.reply({ embeds: [embed2] });
   }
 
