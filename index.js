@@ -10,18 +10,7 @@ client.once('ready', async () => {
   try {
     await rest.put(
       Routes.applicationCommands(process.env.CLIENT_ID),
-      {
-        body: [{
-          name: 'yaz',
-          description: 'İstediğin metni kutu içinde atar',
-          options: [{
-            name: 'metin',
-            description: 'Kutu içine yazılacak metin',
-            type: 3, // STRING
-            required: true
-          }]
-        }]
-      }
+      { body: [{ name: 'yaz', description: 'Slawes duyurusunu atar' }] }
     );
     console.log('Komutlar yüklendi');
   } catch (e) { console.error(e); }
@@ -30,13 +19,20 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName === 'yaz') {
-    const metin = interaction.options.getString('metin');
-
     const embed = new EmbedBuilder()
-   .setAuthor({ name: 'Slawes Cheats | UYG' })
-   .setDescription(metin) // SENİN YAZDIĞIN METİN BURAYA GELECEK
-   .setColor(0x8A2BE2)
-   .setTimestamp();
+     .setAuthor({ name: 'Slawes Cheats | UYG' })
+     .setTitle('Slawes Cheats Emulator v1.0')
+     .setDescription(
+`Merhabalar, sizlere Slawes Klanın geliştirdiği Emulator sunuyorum. Emulator val 5 vermez veya van 156 verirse ticket açın olmaz eğer olursa ticket açıp fixlenmesini bekleyin iyi günler.
+
+☀️ **Özellikler**
+> • No Restart
+> • Emulator VAN hatasını engeller
+> • Tek tıkla çalışır, teknik bilgi gerekmez
+> • Tamamen ücretsiz`
+      )
+     .setColor(0x8A2BE2)
+     .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });
   }
