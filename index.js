@@ -7,13 +7,7 @@ app.get('/', (req, res) => res.send('Slawes Online'));
 app.listen(process.env.PORT || 10000, '0.0.0.0', () => console.log('WEB SERVER ACIK'));
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
 client.once('ready', async () => {
@@ -24,6 +18,11 @@ client.once('ready', async () => {
     { name: 'temizle', description: 'Seçilen kanaldaki tüm mesajları siler', options: [{ name: 'kanal', description: 'Temizlenecek kanal', type: 7, required: true }] },
     { name: 'ticket-kur', description: 'Ticket sistemini kurar' },
     { name: 'lisans', description: 'Lisans keyleri gösterir' },
+    { name: 'rank', description: 'Valorant rank sorgular', options: [
+      { name: 'isim', description: 'Oyuncu ismi Örn: Barbar', type: 3, required: true },
+      { name: 'etiket', description: 'Etiket Örn: EUW', type: 3, required: true },
+      { name: 'bolge', description: 'Bölge eu/na/tr/ap', type: 3, required: false }
+    ]},
     { name: 'yaz', description: 'Embed duyuru' },
     { name: 'spoof', description: 'Fotoğraflı duyuru' }
   ];
@@ -94,12 +93,31 @@ client.on('interactionCreate', async interaction => {
     return interaction.reply({ embeds: [embed], components: [row] });
   }
   if (interaction.commandName === 'lisans') {
-    const embed = new EmbedBuilder()
-     .setTitle('🔑 Slawes Lisans Keyleri')
-     .setDescription('**LİSANS KEY : SENT-IALI-ST26**\n**LİSANS KEY : A1B2-C3D4-E5F6**')
-     .setColor(0x00FF00)
-     .setFooter({ text: 'SlawesCheats' });
+    const embed = new EmbedBuilder().setTitle('🔑 Slawes Lisans Keyleri').setDescription('**LİSANS KEY : SENT-IALI-ST26**\n**LİSANS KEY : A1B2-C3D4-E5F6**').setColor(0x00FF00).setFooter({ text: 'SlawesCheats' });
     return interaction.reply({ embeds: [embed] });
+  }
+  if (interaction.commandName === 'rank') {
+    await interaction.deferReply();
+    const isim = interaction.options.getString('isim');
+    const etiket = interaction.options.getString('etiket');
+    const bolge = interaction.options.getString('bolge') || 'eu';
+    try {
+      const res = await fetch(`https://api.henrikdev.xyz/valorant/v2/mmr/${bolge}/${isim}/${etiket}`);
+      const data = await res.json();
+      if (data.status!== 200) return interaction.editReply(`❌ Oyuncu bulunamadı: ${isim}#${etiket}`);
+      const rank = data.data.current_data.currenttierpatched || 'Unranked';
+      const rr = data.data.current_data.ranking_in_tier;
+      const elo = data.data.current_data.elo;
+      const embed = new EmbedBuilder()
+       .setTitle(`🎯 ${isim}#${etiket} - Rank`)
+       .setDescription(`**Rank:** ${rank}\n**RR:** ${rr}\n**ELO:** ${elo}\n**Bölge:** ${bolge.toUpperCase()}`)
+       .setColor(0xFF4655)
+       .setThumbnail(data.data.current_data.images?.large || null)
+       .setFooter({ text: 'SlawesCheats | Valorant Rank' });
+      return interaction.editReply({ embeds: [embed] });
+    } catch (e) {
+      return interaction.editReply('❌ API hatası, sonra tekrar dene.');
+    }
   }
   if (interaction.commandName === 'yaz') {
     return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slawes Store').setDescription('Duyuru').setColor(0x8A2BE2)] });
@@ -109,19 +127,12 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// SA-AS + ANTI-REKLAM
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
-
-  // 1- SA AS
-  if (['sa','sea','s.a','selam'].includes(message.content.toLowerCase().trim())) {
-    message.reply('as kanki hoşgeldin 🖤');
-  }
-
-  // 2- ANTI REKLAM
+  if (['sa','sea','s.a','selam'].includes(message.content.toLowerCase().trim())) message.reply('as kanki hoşgeldin 🖤');
   const reklam = ["discord.gg", "discord.com/invite", ".gg/", "https://", "http://", "www."];
   if (reklam.some(word => message.content.toLowerCase().includes(word))) {
-    if (message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return; // Admin atarsa silme
+    if (message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
     try {
       await message.delete();
       message.channel.send(`⚠️ ${message.author} reklam yasak!`).then(m => setTimeout(() => m.delete().catch(()=>{}), 5000));
