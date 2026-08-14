@@ -33,7 +33,7 @@ client.on('interactionCreate', async interaction => {
     const metin = interaction.options.getString('metin');
 
     const embed = new EmbedBuilder()
-   .setAuthor({ name: 'GG Klanı | UYG' })
+   .setAuthor({ name: 'Slawes Cheats | UYG' })
    .setDescription(metin) // SENİN YAZDIĞIN METİN BURAYA GELECEK
    .setColor(0x8A2BE2)
    .setTimestamp();
