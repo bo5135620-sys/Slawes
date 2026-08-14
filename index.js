@@ -19,7 +19,7 @@ client.on('interactionCreate', async interaction => {
 `Merhabalar, sizlere Slawes Klanın geliştirdiği Emulator sunuyorum. Emulator val 5 vermez veya van 156 verirse ticket açın olmaz eğer olursa ticket açıp fixlenmesini bekleyin kesinlikle kalıcıdır iyi günler.
 
 🌟 **Özellikler**
-> isterseniz vanguardı silin
+> İsterseniz vanguardı silin
 > Eğer Val 5 Verirse Tekrar Deneyin
 > Gene Olursa Ticket açınca fixlenmeyi bekleyin
 > van 102 ard arda verirse biraz bekleyin sonra tekrar deneyin`
