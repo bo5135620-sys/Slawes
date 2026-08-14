@@ -151,4 +151,3 @@ eğer bunlar ne bilmiyorsanız satın alım sonrası destek ekibimiz size tüm a
 });
 
 client.login(process.env.TOKEN); 
-
