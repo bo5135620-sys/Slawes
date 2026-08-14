@@ -10,7 +10,7 @@ client.once('ready', async () => {
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
     body: [
-      { name: 'sese-gel', description: 'Botu bulunduğun sese çeker' },
+      { name: 'sese gir', description: 'Botu bulunduğun sese çeker' },
       { name: 'sesten-cik', description: 'Botu sesten çıkarır' },
       { name: 'yaz', description: 'Embed duyuru atar' },
       { name: 'spoof', description: 'Fotoğraflı duyuru atar' }
