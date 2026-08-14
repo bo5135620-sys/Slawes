@@ -27,24 +27,28 @@ client.once('ready', async () => {
     { name: 'spoof', description: 'Fotoğraflı duyuru' }
   ];
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-  await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands });
-  await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: [] });
-  console.log('Komutlar yüklendi');
+  try {
+    if (process.env.GUILD_ID && process.env.CLIENT_ID) {
+      await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands });
+      console.log('Guild komutlar yüklendi - ANINDA');
+    } else {
+      await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
+      console.log('Global komutlar yüklendi - 1 saate gelir, GUILD_ID ekle anında olsun');
+    }
+  } catch(e) { console.log('Komut yükleme hatası:', e.message) }
 });
 
 client.on('interactionCreate', async interaction => {
-  // BUTONLAR
   if (interaction.isButton()) {
     if (interaction.customId === 'create_ticket') {
-      const guild = interaction.guild;
-      const existing = guild.channels.cache.find(c => c.name === `ticket-${interaction.user.id}`);
+      const existing = interaction.guild.channels.cache.find(c => c.name === `ticket-${interaction.user.id}`);
       if (existing) return interaction.reply({ content: `Zaten ticketin var: ${existing}`, ephemeral: true });
 
-      const ticketChannel = await guild.channels.create({
+      const ticketChannel = await interaction.guild.channels.create({
         name: `ticket-${interaction.user.id}`,
         type: ChannelType.GuildText,
         permissionOverwrites: [
-          { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+          { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
           { id: interaction.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ReadMessageHistory] },
           { id: client.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
         ]
@@ -57,7 +61,6 @@ client.on('interactionCreate', async interaction => {
       await ticketChannel.send({ content: `Hoşgeldin ${interaction.user}, yetkililer ilgilenecek!`, components: [closeRow] });
       return interaction.reply({ content: `Ticketin açıldı: ${ticketChannel}`, ephemeral: true });
     }
-
     if (interaction.customId === 'close_ticket') {
       await interaction.reply({ content: '🔒 Ticket 5 saniye içinde kapatılacak...' });
       setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
