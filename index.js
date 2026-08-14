@@ -2,16 +2,18 @@ const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('disco
 const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const express = require('express');
 
-// PORT FIX - Render Live olması için
+// 1 - PORT FIX (Render Live olması için)
 const app = express();
-app.get('/', (req,res) => res.send('Slawes Online'));
+app.get('/', (req, res) => res.send('Slawes Online'));
 app.listen(process.env.PORT || 10000, '0.0.0.0', () => console.log('WEB SERVER ACIK'));
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ]
 });
 
@@ -43,7 +45,7 @@ client.on('interactionCreate', async interaction => {
         selfDeaf: false,
         selfMute: false
       });
-      return interaction.editReply(`✅ **${vc.name}** girdim`);
+      return interaction.editReply(`✅ **${vc.name}** girdim kanki`);
     } catch (e) {
       return interaction.editReply(`Hata: ${e.message}`);
     }
@@ -52,7 +54,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'sesten-cik') {
     const conn = getVoiceConnection(interaction.guild.id);
     if (conn) conn.destroy();
-    return interaction.reply('👋 Çıktım');
+    return interaction.reply('👋 Sesten çıktım');
   }
 
   if (interaction.commandName === 'yaz') {
@@ -63,6 +65,15 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'spoof') {
     const embed = new EmbedBuilder().setTitle('Spoofer').setDescription('Açıklama').setColor(0x8A2BE2);
     return interaction.reply({ embeds: [embed] });
+  }
+});
+
+// SA-AS ÖZELLİĞİ
+client.on('messageCreate', async message => {
+  if (message.author.bot) return;
+  const msg = message.content.toLowerCase().trim();
+  if (['sa', 'sea', 's.a', 'selamun aleyküm', 'selamün aleyküm', 'selam'].includes(msg)) {
+    message.reply('as kanki hoşgeldin 🖤');
   }
 });
 
