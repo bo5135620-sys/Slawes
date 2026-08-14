@@ -52,7 +52,6 @@ Intel ve AMD`)
   if (interaction.commandName === 'spoof') {
     const embed2 = new EmbedBuilder()
 .setTitle('Slawes Cheats Spoofer')
-.setDescription(`Şunlarla çalışır:
 SlawesCheats Spoofer
 TPM ,SECURE BOOT ,HVCI ,IOMMU(VT-D) : On
 TÜM ANAKARTLARLA UYUMLU!
