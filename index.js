@@ -1,41 +1,239 @@
-
-const { Client, GatewayIntentBits, Partials, EmbedBuilder, PermissionsBitField, ChannelType, SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, REST, Routes } = require('discord.js');
-const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
-const axios = require('axios');
+require('dotenv').config();
+const { 
+    Client, 
+    GatewayIntentBits, 
+    Partials, 
+    ActivityType, 
+    EmbedBuilder, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle 
+} = require('discord.js');
 const express = require('express');
+
+// ==========================================
+// 1. RENDER 7/24 UYANIK TUTUCU (EXPRESS)
+// ==========================================
 const app = express();
-app.get('/', (req,res) => res.send('BOT ONLINE - SlawesCheats'));
-app.listen(process.env.PORT || 10000, () => console.log('WEB SERVER ACIK PORT 10000'));
-const TOKEN = (process.env.TOKEN || '').trim();
-console.log('TOKEN VAR MI:', !!TOKEN, 'UZUNLUK:', TOKEN.length);
-if(!TOKEN){ console.log('HATA: TOKEN YOK ENV DE!'); }
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent], partials: [Partials.Channel, Partials.Message, Partials.GuildMember] });
-client.on('error', e => console.log('CLIENT ERROR:', e));
-client.on('shardError', e => console.log('SHARD ERROR:', e));
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.status(200).send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Bot Durumu</title><meta charset="utf-8"></head>
+        <body style="background:#0f172a; color:#f8fafc; font-family:sans-serif; text-align:center; padding-top:50px;">
+            <h1 style="color:#22c55e;">🟢 Bot 7/24 Aktif!</h1>
+            <p>Render ve UptimeRobot bağlantısı sorunsuz çalışıyor.</p>
+        </body>
+        </html>
+    `);
+});
+
+app.listen(PORT, () => {
+    console.log(`🌐 [Web] Express sunucusu ${PORT} portunda dinlemede.`);
+});
+
+// ==========================================
+// 2. DISCORD CLIENT TANIMLAMASI
+// ==========================================
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildPresences
+    ],
+    partials: [
+        Partials.Channel,
+        Partials.Message,
+        Partials.User,
+        Partials.GuildMember
+    ]
+});
+
+// ==========================================
+// 3. SLASH KOMUTLARIN TANIMI
+// ==========================================
 const commands = [
- new SlashCommandBuilder().setName('lisan').setDescription('Lisans keyleri gosterir'),
- new SlashCommandBuilder().setName('rank').setDescription('Valorant rank sorgular').addStringOption(o=>o.setName('isim').setDescription('Isim').setRequired(true)).addStringOption(o=>o.setName('etiket').setDescription('Etiket').setRequired(true)),
- new SlashCommandBuilder().setName('sese-gel').setDescription('Botu sese ceker'),
- new SlashCommandBuilder().setName('sesten-cik').setDescription('Botu sesten cikarir'),
- new SlashCommandBuilder().setName('spoof').setDescription('Fotografi duyurur').addAttachmentOption(o=>o.setName('foto').setDescription('Foto').setRequired(true)).addStringOption(o=>o.setName('mesaj').setDescription('Mesaj').setRequired(false)),
- new SlashCommandBuilder().setName('temizle').setDescription('Kanali siler').addChannelOption(o=>o.setName('kanal').setDescription('Kanal').setRequired(false)),
- new SlashCommandBuilder().setName('ticket-kur').setDescription('Ticket kurar').addChannelOption(o=>o.setName('kanal').setDescription('Kanal').setRequired(true)),
-].map(c=>c.toJSON());
+    {
+        name: 'ping',
+        description: 'Botun ve Discord API gecikme sürelerini gösterir.'
+    },
+    {
+        name: 'yardim',
+        description: 'Mevcut tüm bot komutlarını listeler.'
+    },
+    {
+        name: 'istatistik',
+        description: 'Botun RAM kullanımı, uptime ve sunucu istatistiklerini gösterir.'
+    },
+    {
+        name: 'sunucu',
+        description: 'Bulunduğun sunucu hakkında detaylı bilgi verir.'
+    }
+];
+
+// ==========================================
+// 4. BOT HAZIR (READY) & KOMUT KAYDI & OYNATILIYOR
+// ==========================================
 client.once('ready', async () => {
- console.log(`BOT ONLINE: ${client.user.tag}`);
- const rest = new REST({ version: '10' }).setToken(TOKEN);
- try{ await rest.put(Routes.applicationCommands(client.user.id), { body: commands }); console.log('Komutlar yuklendi!'); }catch(e){ console.log('Komut hatasi:', e.message) }
+    console.log(`🚀 [Bot] ${client.user.tag} olarak Discord'a başarıyla giriş yapıldı!`);
+
+    // Global Slash Komutlarını Otomatik Kaydet
+    try {
+        console.log('🔄 [Komutlar] Slash komutları Discord\'a yükleniyor...');
+        await client.application.commands.set(commands);
+        console.log('✅ [Komutlar] Tüm Slash komutları başarıyla kaydedildi!');
+    } catch (error) {
+        console.error('❌ [Komutlar] Komutlar yüklenirken hata:', error);
+    }
+
+    // Dönen Durum / Aktivite Mesajları
+    const activities = [
+        () => ({ name: `⚡ ${client.guilds.cache.size} Sunucu!`, type: ActivityType.Watching }),
+        () => ({ name: `👥 ${client.users.cache.size} Kullanıcı`, type: ActivityType.Watching }),
+        () => ({ name: `/yardim ile komutları gör`, type: ActivityType.Playing }),
+        () => ({ name: `💎 7/24 Aktif & Kesintisiz`, type: ActivityType.Streaming, url: 'https://twitch.tv/discord' })
+    ];
+
+    let activityIndex = 0;
+    setInterval(() => {
+        const activity = activities[activityIndex % activities.length]();
+        client.user.setPresence({
+            activities: [activity],
+            status: 'online'
+        });
+        activityIndex++;
+    }, 15000); // 15 saniyede bir durumu günceller
 });
-client.on('interactionCreate', async interaction => {
- if(!interaction.isChatInputCommand()) return;
- if(interaction.commandName==='lisan'){ const embed=new EmbedBuilder().setTitle('🔑 SlawesCheats - Lisans').setColor(0x00a8ff).setDescription('`SLAWES-XXXX-XXXX` - 30 Gun'); return interaction.reply({ embeds:[embed], ephemeral:true }); }
- if(interaction.commandName==='rank'){ await interaction.deferReply(); const isim=interaction.options.getString('isim'); const etiket=interaction.options.getString('etiket'); try{ const res=await axios.get(`https://api.henrikdev.xyz/valorant/v2/mmr/eu/${isim}/${etiket}`); const d=res.data.data; const embed=new EmbedBuilder().setTitle(`${isim}#${etiket}`).setColor(0xff4655).addFields({ name:'Rank', value:d.current_data.currenttierpatched, inline:true }, { name:'RR', value:`${d.current_data.ranking_in_tier}`, inline:true }); return interaction.editReply({ embeds:[embed] }); }catch{ return interaction.editReply(`Rank bulunamadi: ${isim}#${etiket}`); } }
- if(interaction.commandName==='sese-gel'){ const ch=interaction.member.voice.channel; if(!ch) return interaction.reply({ content:'Sese gir!', ephemeral:true }); joinVoiceChannel({ channelId: ch.id, guildId: interaction.guild.id, adapterCreator: interaction.guild.voiceAdapterCreator }); return interaction.reply(`🔊 ${ch.name} geldim!`); }
- if(interaction.commandName==='sesten-cik'){ const conn=getVoiceConnection(interaction.guild.id); if(!conn) return interaction.reply({ content:'Seste degilim', ephemeral:true }); conn.destroy(); return interaction.reply('Ciktim 👋'); }
- if(interaction.commandName==='spoof'){ const foto=interaction.options.getAttachment('foto'); const mesaj=interaction.options.getString('mesaj')||'📢 Duyuru'; const embed=new EmbedBuilder().setTitle(mesaj).setColor(0x00a8ff).setImage(foto.url); return interaction.reply({ embeds:[embed] }); }
- if(interaction.commandName==='temizle'){ const kanal=interaction.options.getChannel('kanal')||interaction.channel; await interaction.deferReply({ ephemeral:true }); let deleted=0; let lastId; while(true){ const msgs=await kanal.messages.fetch({ limit:100, ...(lastId&&{before:lastId}) }); if(msgs.size===0) break; lastId=msgs.last().id; for(const m of msgs.values()){ await m.delete().catch(()=>{}); deleted++; } if(msgs.size<100) break; } return interaction.editReply(`✅ ${deleted} mesaj silindi.`); }
- if(interaction.commandName==='ticket-kur'){ const kanal=interaction.options.getChannel('kanal'); const embed=new EmbedBuilder().setTitle('🎫 Destek').setDescription('Butona tikla ticket ac').setColor(0x00a8ff); const row=new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ticket_ac').setLabel('🎫 Ticket Ac').setStyle(ButtonStyle.Primary)); await kanal.send({ embeds:[embed], components:[row] }); return interaction.reply({ content:'Kuruldu', ephemeral:true }); }
+
+// ==========================================
+// 5. ETKİLEŞİM & KOMUT YÖNETİCİSİ (INTERACTION)
+// ==========================================
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const { commandName } = interaction;
+
+    try {
+        // --- PING KOMUTU ---
+        if (commandName === 'ping') {
+            const sent = await interaction.reply({ content: '🏓 Ölçülüyor...', fetchReply: true });
+            const latency = sent.createdTimestamp - interaction.createdTimestamp;
+            const apiLatency = Math.round(client.ws.ping);
+
+            const pingEmbed = new EmbedBuilder()
+                .setColor(0x5865F2)
+                .setTitle('🏓 Pong!')
+                .addFields(
+                    { name: '📶 Bot Gecikmesi', value: `\`${latency}ms\``, inline: true },
+                    { name: '🌐 API Gecikmesi', value: `\`${apiLatency}ms\``, inline: true }
+                )
+                .setTimestamp();
+
+            return await interaction.editReply({ content: null, embeds: [pingEmbed] });
+        }
+
+        // --- YARDIM KOMUTU ---
+        if (commandName === 'yardim') {
+            const helpEmbed = new EmbedBuilder()
+                .setColor(0x22C55E)
+                .setTitle('📖 Bot Komut Rehberi')
+                .setDescription('Bot üzerinde kullanabileceğin tüm slash komutları aşağıdadır:')
+                .addFields(
+                    { name: '`/ping`', value: 'Botun anlık ping değerini ölçer.' },
+                    { name: '`/istatistik`', value: 'Botun çalışma süresi ve sistem kaynaklarını gösterir.' },
+                    { name: '`/sunucu`', value: 'Sunucuya dair üye ve kanal istatistiklerini verir.' },
+                    { name: '`/yardim`', value: 'Bu menüyü görüntüler.' }
+                )
+                .setFooter({ text: `${client.user.username} • 7/24 Kesintisiz Hizmet`, iconURL: client.user.displayAvatarURL() });
+
+            return await interaction.reply({ embeds: [helpEmbed] });
+        }
+
+        // --- İSTATİSTİK KOMUTU ---
+        if (commandName === 'istatistik') {
+            const uptimeSeconds = Math.floor(process.uptime());
+            const days = Math.floor(uptimeSeconds / 86400);
+            const hours = Math.floor((uptimeSeconds % 86400) / 3600);
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+            const seconds = uptimeSeconds % 60;
+            const uptimeString = `${days}g ${hours}s ${minutes}d ${seconds}sn`;
+
+            const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+
+            const statEmbed = new EmbedBuilder()
+                .setColor(0xF59E0B)
+                .setTitle('📊 Bot İstatistikleri')
+                .addFields(
+                    { name: '⏱️ Aktif Kalma Süresi', value: `\`${uptimeString}\``, inline: true },
+                    { name: '💾 Bellek (RAM) Kullanımı', value: `\`${memoryUsage} MB\``, inline: true },
+                    { name: '🌐 Toplam Sunucu', value: `\`${client.guilds.cache.size}\``, inline: true },
+                    { name: '👥 Toplam Kullanıcı', value: `\`${client.users.cache.size}\``, inline: true },
+                    { name: '⚙️ Node.js Sürümü', value: `\`${process.version}\``, inline: true },
+                    { name: '🤖 discord.js Sürümü', value: `\`v14.14.1\``, inline: true }
+                )
+                .setTimestamp();
+
+            return await interaction.reply({ embeds: [statEmbed] });
+        }
+
+        // --- SUNUCU BİLGİ KOMUTU ---
+        if (commandName === 'sunucu') {
+            const guild = interaction.guild;
+            const serverEmbed = new EmbedBuilder()
+                .setColor(0x3B82F6)
+                .setTitle(`📌 ${guild.name}`)
+                .setThumbnail(guild.iconURL({ dynamic: true }))
+                .addFields(
+                    { name: '👑 Sunucu Sahibi', value: `<@${guild.ownerId}>`, inline: true },
+                    { name: '👥 Toplam Üye', value: `\`${guild.memberCount}\``, inline: true },
+                    { name: '💬 Toplam Kanal', value: `\`${guild.channels.cache.size}\``, inline: true },
+                    { name: '🚀 Boost Sayısı', value: `\`${guild.premiumSubscriptionCount || 0}\` (Seviye ${guild.premiumTier})`, inline: true },
+                    { name: '📅 Kuruluş Tarihi', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`, inline: true }
+                )
+                .setFooter({ text: `ID: ${guild.id}` })
+                .setTimestamp();
+
+            return await interaction.reply({ embeds: [serverEmbed] });
+        }
+
+    } catch (err) {
+        console.error('Komut çalıştırılırken hata oluştu:', err);
+        const errorMsg = { content: '❌ Bu komut çalıştırılırken beklenmeyen bir hata meydana geldi!', ephemeral: true };
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(errorMsg);
+        } else {
+            await interaction.reply(errorMsg);
+        }
+    }
 });
-client.on('interactionCreate', async i => { if(!i.isButton()||i.customId!=='ticket_ac') return; const ch=await i.guild.channels.create({ name:`ticket-${i.user.username}`, type:ChannelType.GuildText, permissionOverwrites:[{ id:i.guild.id, deny:[PermissionsBitField.Flags.ViewChannel] }, { id:i.user.id, allow:[PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }] }); await i.reply({ content:`Acildi: ${ch}`, ephemeral:true }); });
-console.log('Login deneniyor...');
-client.login(TOKEN).then(()=>console.log('Login istegi gonderildi')).catch(e=>console.log('LOGIN HATASI:', e.message, e.code));
+
+// ==========================================
+// 6. TAŞ GİBİ ANTİ-CRASH (BOT ASLA ÇÖKMEZ)
+// ==========================================
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🛡️ [Anti-Crash] Yakalanmamış Promise Reddi:', reason);
+});
+
+process.on('uncaughtException', (err, origin) => {
+    console.error('🛡️ [Anti-Crash] Yakalanmamış İstisna Hatası:', err);
+});
+
+process.on('uncaughtExceptionMonitor', (err, origin) => {
+    console.error('🛡️ [Anti-Crash] İstisna İzleyici:', err);
+});
+
+// ==========================================
+// 7. BOTU BAŞLAT
+// ==========================================
+const TOKEN = process.env.TOKEN;
+
+if (!TOKEN) {
+    console.error('❌ HATA: .env dosyasında veya Environment Variables kısmında TOKEN bulunamadı!');
+    process.exit(1);
+}
+
+client.login(TOKEN);
