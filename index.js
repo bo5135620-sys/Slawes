@@ -42,12 +42,15 @@ app.listen(PORT, () => {
 // ====================================================
 const client = new Client({
     intents: [
+   const client = new Client({
+    intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildPresences,
-        GatewayIntentBits.GuildVoiceStates
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.MessageContent
+    ],
+    partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
+});
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
 });
