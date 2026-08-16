@@ -608,4 +608,9 @@ client.on('interactionCreate', async (interaction) => {
 process.on('unhandledRejection', (r) => console.error('🛡️ [Anti-Crash]:', r));
 process.on('uncaughtException', (e) => console.error('🛡️ [Anti-Crash]:', e));
 
-client.login(process.env.TOKEN);
+console.log("TOKEN kontrol:", process.env.TOKEN ? `VAR - ${process.env.TOKEN.length} karakter` : "YOK! TOKEN YOK!");
+client.login(process.env.TOKEN).then(() => {
+  console.log("✅ BOT DISCORD'A GİRDİ!");
+}).catch(err => {
+  console.error("❌ BOT GİRİŞ HATASI:", err);
+});
